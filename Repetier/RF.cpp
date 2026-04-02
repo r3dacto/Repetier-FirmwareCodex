@@ -9487,9 +9487,17 @@ void processSpecialGCode(GCode* pCommand) {
 
                 Printer::setEAxisSteps(0); //G92 E0
 
-                // Fix layer height if first layer is higher than start line
+                // Reset layer tracking after the synthetic prime line.
+                // RF2000v2: Start-line extrusion runs on AUTOADJUST_STARTMADEN_AUSSCHLUSS and can
+                // temporarily influence first-layer tracking. Clear all layer state so the first
+                // real model extrusion can define the layer transition again.
                 Printer::queuePositionZLayerLast = 0;
                 Printer::queuePositionZLayerCurrent = 0;
+                Printer::queuePositionZLayerGuessNew = 0;
+#if MOTHERBOARD == DEVICE_TYPE_RF2000v2
+                g_minZCompensationSteps = long(HEAT_BED_Z_COMPENSATION_MIN_MM * Printer::axisStepsPerMM[Z_AXIS]);
+                g_maxZCompensationSteps = long(HEAT_BED_Z_COMPENSATION_MAX_MM * Printer::axisStepsPerMM[Z_AXIS]);
+#endif
 
                 Printer::relativeExtruderCoordinateMode = save_relativeExtruderCoordinateMode;
             } else {
